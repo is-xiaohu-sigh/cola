@@ -2,20 +2,21 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ChatMessage from '@/components/chat-message';
 import ChatInput from '@/components/chat-input';
 import ChatHeader from '@/components/chat-header';
-import { type ModelProvider } from '@/lib/types';
+import DeepThinkingIndicator from '@/components/deep-thinking';
+import { type ModelProvider, type ChatOptions } from '@/lib/types';
 
 export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [provider, setProvider] = useState<ModelProvider>('bailian');
+  const [chatOptions, setChatOptions] = useState<ChatOptions>({ webSearch: false, deepThink: false });
 
-  const transport = new DefaultChatTransport({
+  const transport = useMemo(() => new DefaultChatTransport({
     api: '/api/chat',
-    body: { provider },
-  });
+  }), []);
 
   const { messages, sendMessage, status: chatStatus, setMessages } =
     useChat({ transport });
@@ -26,9 +27,19 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSubmit = (text: string) => {
-    sendMessage({ text });
+  const handleSubmit = (text: string, options: ChatOptions) => {
+    setChatOptions(options);
+    sendMessage({ text }, { body: options });
   };
+
+  // Extract reasoning only when deepThink is enabled
+  const latestAssistantMsg = messages.findLast((m) => m.role === 'assistant');
+  const reasoning = chatOptions.deepThink
+    ? latestAssistantMsg?.parts
+        .filter((p) => p.type === 'reasoning')
+        .map((p) => (p as { text: string }).text)
+        .join('\n') ?? ''
+    : '';
 
   return (
     <div className="flex h-screen flex-col bg-zinc-950">
@@ -53,14 +64,26 @@ export default function ChatPage() {
                 .filter((p) => p.type === 'text')
                 .map((p) => (p as { text: string }).text)
                 .join('');
+              const msgReasoning = chatOptions.deepThink
+                ? msg.parts
+                    .filter((p) => p.type === 'reasoning')
+                    .map((p) => (p as { text: string }).text)
+                    .join('\n')
+                : '';
               return (
-                <ChatMessage key={msg.id} role={msg.role} content={text} />
+                <ChatMessage
+                  key={msg.id}
+                  role={msg.role}
+                  content={text}
+                  reasoning={msgReasoning || undefined}
+                />
               );
             })}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
+      <DeepThinkingIndicator reasoning={reasoning} />
       <div className="mx-auto w-full max-w-3xl">
         <ChatInput onSubmit={handleSubmit} isLoading={isLoading} />
       </div>

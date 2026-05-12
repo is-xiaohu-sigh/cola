@@ -5,3 +5,8 @@ export interface Message {
 }
 
 export type ModelProvider = 'bailian' | 'ollama';
+
+export interface ChatOptions {
+  webSearch: boolean;
+  deepThink: boolean;
+}

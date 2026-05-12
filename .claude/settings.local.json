@@ -13,7 +13,9 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(npm uninstall *)",
       "Bash(sed -i '/AUTH_SECRET/d' \"E:\\\\repository\\\\github\\\\cola\\\\.env\")",
-      "Bash(sed -i '/# NextAuth/d' \"E:\\\\repository\\\\github\\\\cola\\\\.env\")"
+      "Bash(sed -i '/# NextAuth/d' \"E:\\\\repository\\\\github\\\\cola\\\\.env\")",
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://localhost:3000)"
     ]
   }
 }

@@ -3,9 +3,10 @@ import ReactMarkdown from 'react-markdown';
 interface ChatMessageProps {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  reasoning?: string;
 }
 
-export default function ChatMessage({ role, content }: ChatMessageProps) {
+export default function ChatMessage({ role, content, reasoning }: ChatMessageProps) {
   if (role === 'system') return null;
 
   return (
